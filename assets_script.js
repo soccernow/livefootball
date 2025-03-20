@@ -1,47 +1,30 @@
 const apiKey = "1a558971-bebb-40a7-a49b-c5935bfea10b";
-const apiUrl = "https://api.highlightly.net/v1/livescores";
+const apiUrl = `https://api.highlightly.net/v1/matches/live?api_key=${apiKey}`;
 
-async function fetchLiveScores() {
+async function fetchMatches() {
     try {
-        const response = await fetch(apiUrl, {
-            headers: {
-                "Authorization": `Bearer ${apiKey}`
-            }
-        });
-        const data = await response.json();
-        displayScores(data);
-    } catch (error) {
-        document.getElementById("scores-container").innerHTML = "Error fetching live scores.";
-        console.error("Error fetching live scores:", error);
-    }
-}
+        let response = await fetch(apiUrl);
+        let data = await response.json();
 
-function displayScores(data) {
-    const container = document.getElementById("scores-container");
-    container.innerHTML = ""; // Clear previous content
+        let matchesContainer = document.getElementById("matches-container");
+        matchesContainer.innerHTML = "";
 
-    // Assuming the API returns an object with a "matches" array
-    if (data.matches && data.matches.length > 0) {
         data.matches.forEach(match => {
-            // Color-code match status: live (green), upcoming (blue), finished (gray)
-            let statusColor = "#007bff"; // default for upcoming
-            if (match.status.toLowerCase() === "live") statusColor = "green";
-            if (match.status.toLowerCase() === "finished") statusColor = "gray";
-            
-            const matchElement = document.createElement("div");
-            matchElement.style.borderLeft = `4px solid ${statusColor}`;
-            matchElement.style.paddingLeft = "8px";
-            matchElement.innerHTML = `
-                <h3>${match.league}</h3>
-                <p>${match.home_team} ${match.home_score} - ${match.away_score} ${match.away_team}</p>
-                <p>Status: ${match.status}</p>
+            let matchDiv = document.createElement("div");
+            matchDiv.classList.add("match-card");
+            matchDiv.innerHTML = `
+                <div class="match-time">${match.time}</div>
+                <div class="match-teams">
+                    <span>${match.team1} vs ${match.team2}</span>
+                </div>
+                <div class="match-score">${match.score}</div>
             `;
-            container.appendChild(matchElement);
+            matchesContainer.appendChild(matchDiv);
         });
-    } else {
-        container.innerHTML = "No live matches at the moment.";
+    } catch (error) {
+        console.error("Error fetching live matches:", error);
     }
 }
 
-fetchLiveScores();
-setInterval(fetchLiveScores, 60000); // Refresh every 60 seconds
+fetchMatches();
+setInterval(fetchMatches, 30000); // Refresh every 30 seconds
